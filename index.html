@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>External Configurator Demo</title>
+  <style>
+    body { font-family: Arial; max-width: 720px; margin: 40px auto; }
+    label { display:block; margin-top: 14px; font-weight: 600; }
+    select, button { padding: 8px; margin-top: 6px; min-width: 220px; }
+    .box { padding: 16px; border: 1px solid #ddd; border-radius: 10px; }
+    .muted { color:#666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h2>External Configurator (Demo)</h2>
+
+  <div class="box">
+    <div class="muted" id="info"></div>
+
+    <label>Warranty (EC_WARRANTY)</label>
+    <select id="warranty">
+      <option value="NONE">NONE</option>
+      <option value="2Y">2Y</option>
+      <option value="3Y">3Y</option>
+    </select>
+
+    <label>Add Charger (EC_ADD_CHARGER)</label>
+    <select id="charger">
+      <option value="false">false</option>
+      <option value="true">true</option>
+    </select>
+
+    <div style="margin-top:18px;">
+      <button id="submit">Save & Return to CPQ</button>
+    </div>
+  </div>
+
+<script>
+  const qs = new URLSearchParams(window.location.search);
+  const quoteId = qs.get("quoteId") || "";
+  const itemId  = qs.get("itemId")  || "";
+  const returnUrl = qs.get("returnUrl") || "";
+
+  document.getElementById("info").innerHTML =
+    `quoteId: <b>${quoteId || "-"}</b><br/>itemId: <b>${itemId || "-"}</b><br/>returnUrl: <b>${returnUrl || "-"}</b>`;
+
+  document.getElementById("submit").addEventListener("click", () => {
+    const warranty = document.getElementById("warranty").value;
+    const addCharger = document.getElementById("charger").value;
+
+    if (!returnUrl) {
+      alert("No returnUrl provided!");
+      return;
+    }
+
+    const back = new URL(returnUrl);
+    back.searchParams.set("quoteId", quoteId);
+    back.searchParams.set("itemId", itemId);
+    back.searchParams.set("warranty", warranty);
+    back.searchParams.set("addCharger", addCharger);
+
+    window.location.href = back.toString();
+  });
+</script>
+</body>
+</html>
