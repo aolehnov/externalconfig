@@ -3,36 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <title>External Configurator Demo</title>
-  <style>
-    body { font-family: Arial; max-width: 720px; margin: 40px auto; }
-    label { display:block; margin-top: 14px; font-weight: 600; }
-    select, button { padding: 8px; margin-top: 6px; min-width: 220px; }
-    .box { padding: 16px; border: 1px solid #ddd; border-radius: 10px; }
-    .muted { color:#666; font-size: 13px; }
-  </style>
 </head>
 <body>
   <h2>External Configurator (Demo)</h2>
 
-  <div class="box">
-    <div class="muted" id="info"></div>
+  <div id="info"></div>
 
-    <label>Warranty (EC_WARRANTY)</label>
-    <select id="warranty">
-      <option value="NONE">NONE</option>
-      <option value="2Y">2Y</option>
-      <option value="3Y">3Y</option>
-    </select>
+  <label>Warranty</label>
+  <select id="warranty">
+    <option value="NONE">NONE</option>
+    <option value="2Y">2Y</option>
+    <option value="3Y">3Y</option>
+  </select>
 
-    <label>Add Charger (EC_ADD_CHARGER)</label>
-    <select id="charger">
-      <option value="false">false</option>
-      <option value="true">true</option>
-    </select>
+  <label>Add Charger</label>
+  <select id="charger">
+    <option value="false">false</option>
+    <option value="true">true</option>
+  </select>
 
-    <div style="margin-top:18px;">
-      <button id="submit">Save & Return to CPQ</button>
-    </div>
+  <div style="margin-top:18px;">
+    <button id="submit">Save & Return to CPQ</button>
   </div>
 
 <script>
@@ -42,22 +33,31 @@
   const returnUrl = qs.get("returnUrl") || "";
 
   document.getElementById("info").innerHTML =
-    `quoteId: <b>${quoteId || "-"}</b><br/>itemId: <b>${itemId || "-"}</b><br/>returnUrl: <b>${returnUrl || "-"}</b>`;
+    `quoteId: ${quoteId || "-"}<br/>itemId: ${itemId || "-"}<br/>returnUrl: ${returnUrl || "-"}`;
+
+  const warrantyPrice = { NONE: 0, "2Y": 10, "3Y": 20 };
+  const chargerPrice = 25;
 
   document.getElementById("submit").addEventListener("click", () => {
     const warranty = document.getElementById("warranty").value;
-    const addCharger = document.getElementById("charger").value;
+    const addCharger = document.getElementById("charger").value === "true";
 
-    if (!returnUrl) {
-      alert("No returnUrl provided!");
-      return;
-    }
+    const warrantySurcharge = warrantyPrice[warranty] || 0;
+    const chargerSurcharge = addCharger ? chargerPrice : 0;
+    const optionsPrice = warrantySurcharge + chargerSurcharge;
+
+    if (!returnUrl) { alert("No returnUrl provided!"); return; }
 
     const back = new URL(returnUrl);
     back.searchParams.set("quoteId", quoteId);
     back.searchParams.set("itemId", itemId);
+
     back.searchParams.set("warranty", warranty);
-    back.searchParams.set("addCharger", addCharger);
+    back.searchParams.set("addCharger", String(addCharger));
+
+    back.searchParams.set("warrantySurcharge", String(warrantySurcharge));
+    back.searchParams.set("chargerSurcharge", String(chargerSurcharge));
+    back.searchParams.set("optionsPrice", String(optionsPrice));
 
     window.location.href = back.toString();
   });
